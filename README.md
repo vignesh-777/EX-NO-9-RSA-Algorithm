@@ -36,7 +36,63 @@ Step 5: **Security Foundation
 The security of RSA relies on the difficulty of factoring large numbers; thus, choosing sufficiently large prime numbers for \( p \) and \( q \) is crucial for security.
 
 ## Program:
+```c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
+int gcd(int a, int b) { return b == 0 ? a : gcd(b, a % b); }
+
+long long mod_exp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    while (exp) {
+        if (exp % 2) result = (result * base) % mod;
+        base = (base * base) % mod;
+        exp /= 2;
+    }
+    return result;
+}
+
+int mod_inverse(int e, int phi) {
+    int t = 0, newt = 1, r = phi, newr = e;
+    while (newr) {
+        int q = r / newr;
+        int temp = t;
+        t = newt;
+        newt = temp - q * newt;
+        temp = r;
+        r = newr;
+        newr = temp - q * newr;
+    }
+    return r > 1 ? -1 : (t < 0 ? t + phi : t);
+}
+
+int main() {
+    int p = 61, q = 53, n = p * q, phi = (p - 1) * (q - 1), e = 17, d;
+    if (gcd(e, phi) != 1 || (d = mod_inverse(e, phi)) == -1) return -1;
+
+    printf("Public Key: (e = %d, n = %d)\nPrivate Key: (d = %d, n = %d)\n", e, n, d, n);
+
+    char message[100];
+    printf("Enter a message: ");
+    fgets(message, sizeof(message), stdin);
+    int len = strlen(message);
+    if (message[len - 1] == '\n') message[--len] = '\0';
+
+    long long encrypted[100];
+    printf("Encrypted Message:\n");
+    for (int i = 0; i < len; i++) {
+        encrypted[i] = mod_exp((int)message[i], e, n);
+        printf("%lld ", encrypted[i]);
+    }
+    printf("\nDecrypted Message:\n");
+    for (int i = 0; i < len; i++) 
+        printf("%c", (char)mod_exp(encrypted[i], d, n));
+    printf("\n");
+    return 0;
+}
+
+```
 
 
 
